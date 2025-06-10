@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GSTIN Checker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    input, button {
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+      width: 100%;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .status-active {
+      color: green;
+      font-weight: bold;
+    }
+    .status-inactive {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>GSTIN Status Checker</h2>
+  <input type="text" id="gstinInput" placeholder="Enter GSTIN" />
+  <button onclick="checkGST()">Check</button>
+
+  <div id="result"></div>
+
+  <script>
+    async function checkGST() {
+  const gstin = document.getElementById('gstinInput').value.trim();
+  const apiKey = '08162caf2a85f822b8b69d395a12dd32';
+  const url = `http://sheet.gstincheck.co.in/check/${apiKey}/${gstin}`;
+
+  if (!gstin) {
+    alert("Please enter a GSTIN.");
+    return;
+  }
+
+  document.getElementById("result").innerHTML = "Loading...";
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Invalid GSTIN or API error");
+
+    const data = await response.json();
+
+    // More robust field handling
+    const legalName = data.lgnm ?? data.data?.lgnm ?? "N/A";
+    const tradeName = data.tradeNam ?? data.data?.tradeNam ?? "N/A";
+    const status = data.sts ?? data.dty ?? data.data?.sts ?? "Unknown";
+
+    const statusClass = status.toLowerCase().includes("active") ? "status-active" : "status-inactive";
+
+    const output = `
+      <strong>GSTIN:</strong> ${gstin}<br>
+      <strong>Legal Name:</strong> ${legalName}<br>
+      <strong>Trade Name:</strong> ${tradeName}<br>
+      <strong>Status:</strong> <span class="${statusClass}">${status}</span>
+    `;
+
+    document.getElementById("result").innerHTML = output;
+
+  } catch (err) {
+    document.getElementById('result').textContent = "Error: " + err.message;
+  }
+}
+
+  </script>
+
+</body>
+</html>
